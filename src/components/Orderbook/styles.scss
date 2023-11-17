@@ -1,16 +1,57 @@
-.order-book-table {
-  th,
-  td {
-    font-weight: 300;
-    font-size: 14px;
+// Order book
+.order-book {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}
 
-    span:first-child {
-      margin-right: 5px;
-    }
+// Heading
+.heading {
+  display: flex;
+}
+
+.heading-item {
+  flex: 1;
+  padding: 6px;
+
+  span:first-child {
+    margin-right: 5px;
+  }
+}
+
+.heading-item:not(:first-child) {
+  text-align: right;
+}
+
+// Bids/Asks
+.bids,
+.asks {
+  margin-bottom: 10px;
+}
+
+.bids-row,
+.asks-row {
+  display: flex;
+
+  span {
+    flex: 1;
+    padding: 1px 6px;
+    border-radius: 4px;
   }
 
-  th:not(:first-child),
-  td:not(:first-child) {
+  span:not(:first-child) {
     text-align: right;
+  }
+}
+
+.bids-row:first-child {
+  span:first-child {
+    background: rgba(var(--bs-success-rgb), 0.2);
+  }
+}
+
+.asks-row:last-child {
+  span:first-child {
+    background: rgba(var(--bs-danger-rgb), 0.2);
   }
 }
