@@ -9,7 +9,7 @@ export const Bids = ({ bids }: Props) => {
   return (
     <div className="bids">
       {bids.map(([price, amount]) => (
-        <div className="bids-row">
+        <div key={price} className="bids-row">
           <span className="text-success">{price}</span>
           <span>{amount}</span>
           <span>{calculateTotalAmount(price, amount)}</span>

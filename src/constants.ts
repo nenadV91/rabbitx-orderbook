@@ -6,7 +6,7 @@ const {
   VITE_IS_PRODUCTION,
 } = import.meta.env;
 
-export const isProd = VITE_IS_PRODUCTION || false;
+export const isProd = VITE_IS_PRODUCTION || true;
 export const jwtToken = isProd ? VITE_PROD_JWT_TOKEN : VITE_TEST_JWT_TOKEN;
 export const wsUrl = isProd ? VITE_PROD_WS_URL : VITE_TEST_WS_URL;
 

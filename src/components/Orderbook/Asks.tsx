@@ -9,7 +9,7 @@ export const Asks = ({ bids }: Props) => {
   return (
     <div className="asks">
       {bids.map(([price, amount]) => (
-        <div className="asks-row">
+        <div key={price} className="asks-row">
           <span className="text-danger">{price}</span>
           <span>{amount}</span>
           <span>{calculateTotalAmount(price, amount)}</span>
