@@ -13,7 +13,7 @@ export const updateOrderBookItems = (
 
     // Replace or add new items or delete if amount is zero
     newItems.forEach(([price, amount]) => {
-      if (Number(amount)) data[price] = amount;
+      if (+amount) data[price] = amount;
       else delete data[price];
     });
 
@@ -22,7 +22,7 @@ export const updateOrderBookItems = (
   }
 
   // Sort by price
-  output.sort((a, b) => Number(b[0]) - Number(a[0]));
+  output.sort((a, b) => +b[0] - +a[0]);
 
   return output;
 };

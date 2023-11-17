@@ -8,7 +8,7 @@ function App() {
   return (
     <Container className="text-secondary">
       <Row className="center">
-        <Col xs={5}>
+        <Col xs={12} md={8} lg={6} xl={5}>
           <OrderBook />
         </Col>
       </Row>
