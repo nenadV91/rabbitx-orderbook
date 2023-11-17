@@ -12,4 +12,4 @@ export const wsUrl = isProd ? VITE_PROD_WS_URL : VITE_TEST_WS_URL;
 
 // OrderBook
 export const orderBookItemLimit = 10;
-export const orderBookDecimalLimit = 4;
+export const orderBookDecimalLimit = 3;

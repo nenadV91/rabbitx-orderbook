@@ -1,18 +1,25 @@
+import { BarLengths } from "../../hooks/calculateBarsPercentage";
 import { BidAskType } from "../../types";
 import { calculateTotalAmount } from "../../utils/calculateTotalAmount";
 
 type Props = {
-  bids: BidAskType;
+  asks: BidAskType;
+  percentages: BarLengths;
 };
 
-export const Asks = ({ bids }: Props) => {
+export const Asks = ({ asks, percentages }: Props) => {
   return (
     <div className="asks">
-      {bids.map(([price, amount]) => (
+      {asks.map(([price, amount]) => (
         <div key={price} className="asks-row">
           <span className="text-danger">{price}</span>
           <span>{amount}</span>
-          <span>{calculateTotalAmount(price, amount)}</span>
+          <span
+            style={{ ["--width-after" as string]: `${percentages[price]}%` }}
+            className="percentage-bar asks-bar"
+          >
+            {calculateTotalAmount(price, amount)}
+          </span>
         </div>
       ))}
     </div>
