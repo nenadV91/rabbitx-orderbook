@@ -1,67 +1,72 @@
-import { Centrifuge } from "centrifuge";
-import { useEffect, useState } from "react";
-import { OrderBookSideType } from "../types";
-import { updateOrderBookSide } from "../utils/updateOrderBookSide";
-import { parseApiItems } from "../utils/parseApiItems";
-
-const {
-  VITE_TEST_JWT_TOKEN,
-  VITE_TEST_WS_URL,
-  VITE_PROD_JWT_TOKEN,
-  VITE_PROD_WS_URL,
-} = import.meta.env;
-
-const isProd = false;
-const jwtToken = isProd ? VITE_PROD_JWT_TOKEN : VITE_TEST_JWT_TOKEN;
-const wsUrl = isProd ? VITE_PROD_WS_URL : VITE_TEST_WS_URL;
+import { useEffect, useState, useCallback } from "react";
+import { useCentrifuge } from "./useCentrifuge";
+import { BidAskType } from "../types";
+import { updateOrderBookItems } from "../utils/updateOrderBookItems";
+import {
+  PublicationContext,
+  SubscribedContext,
+  Subscription,
+} from "centrifuge";
 
 export const useOrderbook = (market: string) => {
-  const [bids, setBids] = useState<OrderBookSideType>({});
-  const [asks, setAsks] = useState<OrderBookSideType>({});
+  const { centrifuge } = useCentrifuge();
+
+  const [bids, setBids] = useState<BidAskType>([]);
+  const [asks, setAsks] = useState<BidAskType>([]);
   const [lastSequence, setLastSequence] = useState<number | null>(null);
+  const [sub, setSub] = useState<Subscription | null>(null);
+
+  const handlePublication = useCallback(
+    (ctx: PublicationContext) => {
+      if (!sub) return;
+      // if (lastSequence && lastSequence + 1 !== ctx.data.lastSequence) {
+      //   sub.unsubscribe();
+      //   sub.removeAllListeners();
+      //   setSub(null);
+      // } else {
+      //   setBids((bids) => updateOrderBookItems(bids, ctx.data.bids));
+      //   setAsks((asks) => updateOrderBookItems(asks, ctx.data.asks));
+      //   setLastSequence(ctx.data?.sequence);
+      // }
+
+      setBids((bids) => updateOrderBookItems(bids, ctx.data.bids));
+      setAsks((asks) => updateOrderBookItems(asks, ctx.data.asks));
+      setLastSequence(ctx.data?.sequence);
+    },
+    [sub]
+  );
+
+  const handleSubscription = useCallback((ctx: SubscribedContext) => {
+    console.log("Subscribed", ctx);
+    setBids(updateOrderBookItems(ctx.data?.bids, null));
+    setAsks(updateOrderBookItems(ctx.data?.asks, null));
+    setLastSequence(ctx.data.sequence);
+  }, []);
+
+  const subscribe = useCallback(() => {
+    if (!centrifuge) return;
+
+    if (!sub) {
+      setSub(centrifuge.newSubscription(`orderbook:${market}`));
+    } else {
+      sub
+        .on("publication", handlePublication)
+        .on("subscribed", handleSubscription)
+        .on("unsubscribed", function (ctx) {
+          console.log(`unsubscribed: ${ctx.code}, ${ctx.reason}`);
+        })
+        .subscribe();
+    }
+  }, [centrifuge, handlePublication, handleSubscription, market, sub]);
 
   useEffect(() => {
-    const centrifuge = new Centrifuge(wsUrl, {
-      token: jwtToken,
-    });
+    subscribe();
 
-    centrifuge
-      .on("connecting", function (ctx) {
-        console.log(`connecting: ${ctx.code}, ${ctx.reason}`);
-      })
-      .on("connected", function (ctx) {
-        console.log(`connected over ${ctx.transport}`);
-      })
-      .on("disconnected", function (ctx) {
-        console.log(`disconnected: ${ctx.code}, ${ctx.reason}`);
-      })
-      .connect();
+    return () => {
+      sub?.unsubscribe();
+      sub?.removeAllListeners();
+    };
+  }, [subscribe, sub]);
 
-    const sub = centrifuge.newSubscription(`orderbook:${market}`);
-
-    sub
-      .on("publication", function (ctx) {
-        const { bids: newBids, asks: newAsks, sequence } = ctx.data;
-
-        setBids((bids) => updateOrderBookSide(bids, newBids));
-        setAsks((asks) => updateOrderBookSide(asks, newAsks));
-        setLastSequence(sequence);
-      })
-      .on("subscribing", function (ctx) {
-        console.log(`subscribing: ${ctx.code}, ${ctx.reason}`);
-      })
-      .on("subscribed", function (ctx) {
-        const { bids, asks, sequence } = ctx.data;
-        setBids(parseApiItems(bids));
-        setAsks(parseApiItems(asks));
-        setLastSequence(sequence);
-      })
-      .on("unsubscribed", function (ctx) {
-        console.log(`unsubscribed: ${ctx.code}, ${ctx.reason}`);
-      })
-      .subscribe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [market]);
-
-  return { bids, asks, lastSequence };
+  return { bids, asks };
 };
