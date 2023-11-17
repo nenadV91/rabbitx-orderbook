@@ -1,0 +1,16 @@
+.order-book-table {
+  th,
+  td {
+    font-weight: 300;
+    font-size: 14px;
+
+    span:first-child {
+      margin-right: 5px;
+    }
+  }
+
+  th:not(:first-child),
+  td:not(:first-child) {
+    text-align: right;
+  }
+}
