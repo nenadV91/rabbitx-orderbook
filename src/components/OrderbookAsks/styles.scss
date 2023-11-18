@@ -1,0 +1,23 @@
+.asks {
+  margin-bottom: 10px;
+}
+
+.asks-row {
+  display: flex;
+
+  span {
+    flex: 1;
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  span:not(:first-child) {
+    text-align: right;
+  }
+}
+
+.asks-row:last-child {
+  span:first-child {
+    background: rgba(var(--bs-danger-rgb), 0.2);
+  }
+}

@@ -1,8 +1,7 @@
 import "./styles.scss";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Container, Row, Col } from "react-bootstrap";
-
-import { OrderBook } from "../Orderbook";
+import { OrderBook } from "../../containers/OrderBook";
 
 function App() {
   return (

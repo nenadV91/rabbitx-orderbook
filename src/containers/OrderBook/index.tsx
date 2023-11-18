@@ -1,11 +1,11 @@
 import { useMemo } from "react";
 import { useOrderbook } from "../../hooks/useOrderbook";
 import { orderBookItemLimit } from "../../constants";
-import { Heading } from "./Heading";
-import { Bids } from "./Bids";
-import { Asks } from "./Asks";
-import "./styles.scss";
 import { calculateBarLengths } from "../../hooks/calculateBarsPercentage";
+import { OrderbookHeading } from "../../components/OrderbookHeading";
+import { OrderbookBids } from "../../components/OrderbookBids";
+import { OrderbookAsks } from "../../components/OrderbookAsks";
+import "./styles.scss";
 
 export const OrderBook = () => {
   const baseCoin = "USD";
@@ -25,9 +25,9 @@ export const OrderBook = () => {
 
   return (
     <div className="order-book">
-      <Heading baseCoin={baseCoin} quoteCoin={quoteCoin} />
-      <Asks percentages={askPercentages} asks={displayAsks} />
-      <Bids percentages={bidPercentages} bids={displayBids} />
+      <OrderbookHeading baseCoin={baseCoin} quoteCoin={quoteCoin} />
+      <OrderbookAsks percentages={askPercentages} asks={displayAsks} />
+      <OrderbookBids percentages={bidPercentages} bids={displayBids} />
     </div>
   );
 };

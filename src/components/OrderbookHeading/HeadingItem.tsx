@@ -1,4 +1,5 @@
 import { Badge } from "react-bootstrap";
+import "./styles.scss";
 
 type HeadCellProps = {
   label: string;

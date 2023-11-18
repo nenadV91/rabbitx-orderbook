@@ -1,0 +1,23 @@
+.bids {
+  margin-bottom: 10px;
+}
+
+.bids-row {
+  display: flex;
+
+  span {
+    flex: 1;
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  span:not(:first-child) {
+    text-align: right;
+  }
+}
+
+.bids-row:first-child {
+  span:first-child {
+    background: rgba(var(--bs-success-rgb), 0.2);
+  }
+}

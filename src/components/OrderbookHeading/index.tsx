@@ -6,7 +6,7 @@ type Props = {
   quoteCoin: string;
 };
 
-export const Heading = ({ baseCoin, quoteCoin }: Props) => {
+export const OrderbookHeading = ({ baseCoin, quoteCoin }: Props) => {
   return (
     <div className="heading">
       <HeadingItem label="Price" badge={baseCoin} />

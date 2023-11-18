@@ -1,0 +1,16 @@
+.heading {
+  display: flex;
+}
+
+.heading-item {
+  flex: 1;
+  padding: 6px;
+
+  span:first-child {
+    margin-right: 5px;
+  }
+}
+
+.heading-item:not(:first-child) {
+  text-align: right;
+}
