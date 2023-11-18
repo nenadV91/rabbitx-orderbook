@@ -1,4 +1,4 @@
-import { BarLengths } from "../../hooks/calculateBarsPercentage";
+import { BarLengths } from "../../utils/calculateBarsPercentage";
 import { BidAskType, OrderSideType } from "../../types";
 import { OrderbookPercentageBar } from "../OrderbookPercentageBar";
 import "./styles.scss";

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { Subscription } from "centrifuge";
 import { useCentrifuge } from "./useCentrifuge";
 import { updateOrderBookItems } from "../utils/updateOrderBookItems";
@@ -14,11 +14,13 @@ export const useOrderbook = (market: string) => {
   const [needsReload, setNeedsReload] = useState<boolean>(false);
   const [lastSequence, setLastSequence] = useState<number | null>(null);
 
+  const subscriptionString = useMemo(() => `orderbook:${market}`, [market]);
+
   const subscribe = useCallback(() => {
     if (!centrifuge) return;
 
     if (!sub) {
-      setSub(centrifuge.newSubscription(`orderbook:${market}`));
+      setSub(centrifuge.newSubscription(subscriptionString));
     } else {
       sub
         .on("publication", (ctx) => {
@@ -36,17 +38,19 @@ export const useOrderbook = (market: string) => {
           });
         })
         .on("subscribed", (ctx) => {
-          console.log("Subscribed", ctx);
+          console.log(`Subscribed to ${subscriptionString}`, ctx);
           setBids(updateOrderBookItems(ctx.data?.bids, null));
           setAsks(updateOrderBookItems(ctx.data?.asks, null));
           setLastSequence(ctx.data.sequence);
         })
         .on("unsubscribed", (ctx) => {
-          console.log(`unsubscribed: ${ctx.code}, ${ctx.reason}`);
+          console.log(
+            `Unsubscribed from ${subscriptionString}, ${ctx.code}, ${ctx.reason}`
+          );
         })
         .subscribe();
     }
-  }, [centrifuge, market, sub]);
+  }, [centrifuge, sub, subscriptionString]);
 
   // Handle initial subscribe and clean up on unmount
   useEffect(() => {
@@ -75,6 +79,7 @@ export const useOrderbook = (market: string) => {
 
   // To test lastSequence issue uncomment this
   // It will mess up the lastSequence every 5s and force re-subscribe
+  // Re-subscribe will fetch initial snapshot and update the data
   // useEffect(() => {
   //   setInterval(() => {
   //     console.log("Messing up last sequence");

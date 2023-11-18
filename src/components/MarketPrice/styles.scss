@@ -1,0 +1,22 @@
+.market-price {
+  padding: 0.5rem;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  font-size: 1.2rem;
+}
+
+.last-traded-price {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.last-traded-price-icon {
+  width: 10px;
+  margin-right: 5px;
+}
+
+.index-price {
+  flex: 2;
+}
