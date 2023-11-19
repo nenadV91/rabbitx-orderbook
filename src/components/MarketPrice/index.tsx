@@ -1,4 +1,4 @@
-import { MarketPriceDirection } from "../../hooks/useMarketPrice";
+import { MarketPriceDirection } from "../../types";
 import MarketUpIcon from "../../assets/icons/market-up.svg";
 import MarketDownIcon from "../../assets/icons/market-down.svg";
 import "./styles.scss";

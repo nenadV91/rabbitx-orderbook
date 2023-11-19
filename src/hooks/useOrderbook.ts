@@ -9,20 +9,18 @@ export const useOrderbook = (market: string) => {
 
   const [bids, setBids] = useState<BidAskType>([]);
   const [asks, setAsks] = useState<BidAskType>([]);
-  const [sub, setSub] = useState<Subscription | null>(null);
 
   const [needsReload, setNeedsReload] = useState<boolean>(false);
   const [lastSequence, setLastSequence] = useState<number | null>(null);
 
-  const subscriptionString = useMemo(() => `orderbook:${market}`, [market]);
+  const subscriptionString = useMemo(
+    () => market && `orderbook:${market}`,
+    [market]
+  );
 
-  const subscribe = useCallback(() => {
-    if (!centrifuge) return;
-
-    if (!sub) {
-      setSub(centrifuge.newSubscription(subscriptionString));
-    } else {
-      sub
+  const handleSubscription = useCallback(
+    (subscription: Subscription) => {
+      subscription
         .on("publication", (ctx) => {
           setBids((bids) => updateOrderBookItems(bids, ctx.data.bids));
           setAsks((asks) => updateOrderBookItems(asks, ctx.data.asks));
@@ -41,41 +39,68 @@ export const useOrderbook = (market: string) => {
           console.log(`Subscribed to ${subscriptionString}`, ctx);
           setBids(updateOrderBookItems(ctx.data?.bids, null));
           setAsks(updateOrderBookItems(ctx.data?.asks, null));
-          setLastSequence(ctx.data.sequence);
         })
         .on("unsubscribed", (ctx) => {
           console.log(
             `Unsubscribed from ${subscriptionString}, ${ctx.code}, ${ctx.reason}`
           );
-        })
-        .subscribe();
-    }
-  }, [centrifuge, sub, subscriptionString]);
+        });
+    },
+    [subscriptionString]
+  );
 
-  // Handle initial subscribe and clean up on unmount
+  const subscribeToOrderbook = useCallback(
+    (subscriptionString: string) => {
+      if (!centrifuge) return;
+
+      // Check if a subscription already exists for this market
+      let subscription = centrifuge.getSubscription(subscriptionString);
+
+      if (!subscription) {
+        // Create a new subscription if it doesn't exist
+        subscription = centrifuge.newSubscription(subscriptionString);
+      }
+
+      // Attach handlers and subscribe
+      handleSubscription(subscription);
+      subscription.subscribe();
+    },
+    [centrifuge, handleSubscription]
+  );
+
+  // Effect to handle market changes
   useEffect(() => {
-    subscribe();
+    if (!subscriptionString || !centrifuge) return;
 
+    // Subscribe to the new market
+    subscribeToOrderbook(subscriptionString);
+
+    // Cleanup function to unsubscribe and remove listeners
     return () => {
-      sub?.unsubscribe();
-      sub?.removeAllListeners();
+      const subscription = centrifuge.getSubscription(subscriptionString);
+      if (subscription) {
+        subscription.unsubscribe();
+        subscription.removeAllListeners();
+      }
     };
-  }, [subscribe, sub]);
+  }, [subscribeToOrderbook, centrifuge, subscriptionString]);
 
   // Observe and trigger new subscribe if needsReload is true
   useEffect(() => {
-    if (needsReload) {
+    if (needsReload && centrifuge) {
+      const subscription = centrifuge.getSubscription(subscriptionString);
+
       // First unsubscribe and remove event listeners
-      sub?.unsubscribe();
-      sub?.removeAllListeners();
+      subscription?.unsubscribe();
+      subscription?.removeAllListeners();
 
       // Subscribe again
-      subscribe();
+      subscribeToOrderbook(subscriptionString);
 
       // Return needsReload back to false
       setNeedsReload(false);
     }
-  }, [subscribe, needsReload, sub]);
+  }, [centrifuge, needsReload, subscribeToOrderbook, subscriptionString]);
 
   // To test lastSequence issue uncomment this
   // It will mess up the lastSequence every 5s and force re-subscribe

@@ -1,50 +1,40 @@
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { Subscription } from "centrifuge";
 import { useCentrifuge } from "./useCentrifuge";
-import { useState, useCallback, useEffect, useMemo } from "react";
-
-export enum MarketPriceDirection {
-  UP = "UP",
-  DOWN = "DOWN",
-}
+import { MarketPriceDirection } from "../types";
 
 export const useMarketPrice = (market: string) => {
   const { centrifuge } = useCentrifuge();
 
-  const [sub, setSub] = useState<Subscription | null>(null);
   const [lastTradedPrice, setLastTradedPrice] = useState<string | null>(null);
   const [indexPrice, setIndexPrice] = useState<string | null>(null);
   const [marketPriceDirection, setMarketPriceDirection] =
     useState<MarketPriceDirection | null>(null);
 
-  const subscriptionString = useMemo(() => `market:${market}`, [market]);
+  const subscriptionString = useMemo(
+    () => market && `market:${market}`,
+    [market]
+  );
 
-  const subscribe = useCallback(() => {
-    if (!centrifuge) return;
-
-    if (!sub) {
-      setSub(centrifuge.newSubscription(subscriptionString));
-    } else {
-      sub
+  const handleSubscription = useCallback(
+    (subscription: Subscription) => {
+      subscription
         .on("publication", (ctx) => {
           const { last_trade_price, index_price } = ctx.data;
 
-          // Update lastTradedPrice and marketPriceDirection if there is data from the API
           if (last_trade_price) {
             setLastTradedPrice((lastPrice) => {
               if (lastPrice) {
                 setMarketPriceDirection(
-                  // If new last_trade_price is bigger then last price set direction to UP, otherwise down
                   last_trade_price > lastPrice
                     ? MarketPriceDirection.UP
                     : MarketPriceDirection.DOWN
                 );
               }
-
               return last_trade_price;
             });
           }
 
-          // Update spotMarketPrice if there is data from the API
           if (index_price) {
             setIndexPrice(index_price);
           }
@@ -58,20 +48,44 @@ export const useMarketPrice = (market: string) => {
           console.log(
             `Unsubscribed from ${subscriptionString}, ${ctx.code}, ${ctx.reason}`
           );
-        })
-        .subscribe();
-    }
-  }, [centrifuge, sub, subscriptionString]);
+        });
+    },
+    [subscriptionString]
+  );
 
-  // Handle initial subscribe and clean up on unmount
+  const subscribeToMarket = useCallback(
+    (subscriptionString: string) => {
+      if (!centrifuge) return;
+
+      // Check if a subscription already exists for this market
+      let subscription = centrifuge.getSubscription(subscriptionString);
+
+      if (!subscription) {
+        // Create a new subscription if it doesn't exist
+        subscription = centrifuge.newSubscription(subscriptionString);
+      }
+
+      // Attach handlers and subscribe
+      handleSubscription(subscription);
+      subscription.subscribe();
+    },
+    [centrifuge, handleSubscription]
+  );
+
+  // Effect to handle market changes and subscription management
   useEffect(() => {
-    subscribe();
+    if (!subscriptionString || !centrifuge) return;
+
+    subscribeToMarket(subscriptionString);
 
     return () => {
-      sub?.unsubscribe();
-      sub?.removeAllListeners();
+      const subscription = centrifuge.getSubscription(subscriptionString);
+      if (subscription) {
+        subscription.unsubscribe();
+        subscription.removeAllListeners();
+      }
     };
-  }, [sub, subscribe]);
+  }, [subscribeToMarket, subscriptionString, centrifuge]);
 
   return { lastTradedPrice, indexPrice, marketPriceDirection };
 };

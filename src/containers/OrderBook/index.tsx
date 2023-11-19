@@ -8,20 +8,23 @@ import { OrderbookAsks } from "../../components/OrderbookAsks";
 import { MarketPrice } from "../../components/MarketPrice";
 import "./styles.scss";
 import { useMarketPrice } from "../../hooks/useMarketPrice";
+import { MarketItem } from "../../types";
 
-export const OrderBook = () => {
-  const baseCoin = "USD";
-  const quoteCoin = "SOL";
+type Props = {
+  market: MarketItem;
+};
 
-  const market = `${quoteCoin}-${baseCoin}`;
+export const OrderBook = ({ market }: Props) => {
+  const { baseCoin, quoteCoin } = market;
+  const marketString = `${quoteCoin}-${baseCoin}`;
 
-  const { bids, asks } = useOrderbook(market);
+  const { bids, asks } = useOrderbook(marketString);
 
   const displayBids = useMemo(() => bids.slice(0, orderBookItemLimit), [bids]);
   const displayAsks = useMemo(() => asks.slice(-orderBookItemLimit), [asks]);
 
   const { lastTradedPrice, indexPrice, marketPriceDirection } =
-    useMarketPrice(market);
+    useMarketPrice(marketString);
 
   const { askPercentages, bidPercentages } = calculateBarLengths(
     displayAsks,
