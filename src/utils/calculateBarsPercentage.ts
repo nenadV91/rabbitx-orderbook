@@ -1,20 +1,20 @@
 import { BidAskType } from "../types";
 
-export type BarLengths = {
-  [key: string]: number;
+export type TotalItem = {
+  [key: string]: {
+    percentage: number;
+    cumulative: number | string;
+  };
 };
 
-export type BarLengthsOutput = {
-  askPercentages: BarLengths;
-  bidPercentages: BarLengths;
+export type Total = {
+  askTotals: TotalItem;
+  bidTotals: TotalItem;
 };
 
-export function calculateBarLengths(
-  asks: BidAskType,
-  bids: BidAskType
-): BarLengthsOutput {
+export function calculateTotal(asks: BidAskType, bids: BidAskType): Total {
   if (!bids.length || !asks.length) {
-    return { askPercentages: {}, bidPercentages: {} };
+    return { askTotals: {}, bidTotals: {} };
   }
 
   // Helper function to calculate cumulative amounts
@@ -37,13 +37,13 @@ export function calculateBarLengths(
   const calculatePercentages = (arr: (string | number)[][]) => {
     return arr.reduce((acc, [price, cumulative]) => {
       const percentage = (+cumulative / maxCumulative) * 100;
-      acc[price] = percentage;
+      acc[price] = { percentage, cumulative };
       return acc;
-    }, {} as BarLengths);
+    }, {} as TotalItem);
   };
 
-  const askPercentages = calculatePercentages(cumulativeAsks);
-  const bidPercentages = calculatePercentages(cumulativeBids);
+  const askTotals = calculatePercentages(cumulativeAsks);
+  const bidTotals = calculatePercentages(cumulativeBids);
 
-  return { askPercentages, bidPercentages };
+  return { askTotals, bidTotals };
 }

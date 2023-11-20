@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useOrderbook } from "../../hooks/useOrderbook";
 import { orderBookItemLimit } from "../../constants";
-import { calculateBarLengths } from "../../utils/calculateBarsPercentage";
+import { calculateTotal } from "../../utils/calculateBarsPercentage";
 import { OrderbookHeading } from "../../components/OrderbookHeading";
 import { OrderbookBids } from "../../components/OrderbookBids";
 import { OrderbookAsks } from "../../components/OrderbookAsks";
@@ -26,21 +26,18 @@ export const OrderBook = ({ market }: Props) => {
   const { lastTradedPrice, indexPrice, marketPriceDirection } =
     useMarketPrice(marketString);
 
-  const { askPercentages, bidPercentages } = calculateBarLengths(
-    displayAsks,
-    displayBids
-  );
+  const { askTotals, bidTotals } = calculateTotal(displayAsks, displayBids);
 
   return (
     <div className="order-book">
       <OrderbookHeading baseCoin={baseCoin} quoteCoin={quoteCoin} />
-      <OrderbookAsks percentages={askPercentages} asks={displayAsks} />
+      <OrderbookAsks totals={askTotals} asks={displayAsks} />
       <MarketPrice
         lastTradedPrice={lastTradedPrice}
         indexPrice={indexPrice}
         marketPriceDirection={marketPriceDirection}
       />
-      <OrderbookBids percentages={bidPercentages} bids={displayBids} />
+      <OrderbookBids totals={bidTotals} bids={displayBids} />
     </div>
   );
 };

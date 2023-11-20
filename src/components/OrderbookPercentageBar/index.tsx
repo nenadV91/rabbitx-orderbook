@@ -1,18 +1,20 @@
+import { orderBookDecimalLimit } from "../../constants";
 import { OrderSideType } from "../../types";
-import { calculateTotalAmount } from "../../utils/calculateTotalAmount";
+import { limitDecimals } from "../../utils/limitDecimals";
 import "./styles.scss";
 
 type Props = {
   price: string;
   amount: string;
-  percentage: number;
+  total: {
+    percentage: number;
+    cumulative: number | string;
+  };
   type: OrderSideType;
 };
 
 export const OrderbookPercentageBar = ({
-  percentage,
-  amount,
-  price,
+  total: { percentage, cumulative },
   type,
 }: Props) => {
   const barType = type === OrderSideType.ASK ? "asks-bar" : "bids-bar";
@@ -20,7 +22,7 @@ export const OrderbookPercentageBar = ({
 
   return (
     <span style={style} className={`percentage-bar ${barType}`}>
-      {calculateTotalAmount(price, amount)}
+      {limitDecimals(+cumulative, orderBookDecimalLimit)}
     </span>
   );
 };

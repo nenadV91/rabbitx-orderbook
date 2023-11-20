@@ -1,14 +1,14 @@
-import { BarLengths } from "../../utils/calculateBarsPercentage";
+import { TotalItem } from "../../utils/calculateBarsPercentage";
 import { BidAskType, OrderSideType } from "../../types";
 import { OrderbookPercentageBar } from "../OrderbookPercentageBar";
 import "./styles.scss";
 
 type Props = {
   bids: BidAskType;
-  percentages: BarLengths;
+  totals: TotalItem;
 };
 
-export const OrderbookBids = ({ bids, percentages }: Props) => {
+export const OrderbookBids = ({ bids, totals }: Props) => {
   return (
     <div className="bids">
       {bids.map(([price, amount]) => (
@@ -17,7 +17,7 @@ export const OrderbookBids = ({ bids, percentages }: Props) => {
           <span>{amount}</span>
           <OrderbookPercentageBar
             type={OrderSideType.BID}
-            percentage={percentages[price]}
+            total={totals[price]}
             price={price}
             amount={amount}
           />
