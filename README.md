@@ -2,7 +2,7 @@
 
 ### Demo
 
-https://6559e07d43f25914a855ed99--rabbitx.netlify.app/
+https://main--rabbitx.netlify.app/
 
 ## Approach taken
 
